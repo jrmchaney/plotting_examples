@@ -26,6 +26,6 @@ Below are a list of helpful links for ggplot2:
 
 # Other useful R links
 
-- [data wrangling cheatsheet](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
-- [Visualize linear regressions or mixed effect model outputs with sjPlot](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://cran.r-project.org/web/packages/sjPlot/sjPlot.pdf)
+- [data wrangling cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+- [Visualize linear regressions or mixed effect model outputs with sjPlot](https://cran.r-project.org/web/packages/sjPlot/sjPlot.pdf)
 
