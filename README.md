@@ -1,6 +1,6 @@
 # Plotting Examples using ggplot2 in R
 
-The above `ggplotting.Rmd` script shows a couple examples of plotting in ggplot2.
+The above `ggplotting.Rmd` script shows a couple examples of plotting in ggplot2. All you need to do is click on it above and download to your computer.
 <br>
 This script was created by Jacie R. McHaney, using behavioral data from the following publication:
 
