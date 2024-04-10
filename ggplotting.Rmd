@@ -1,0 +1,133 @@
+---
+title: "Plotting examples using ggplot2"
+output:
+  html_document:
+    df_print: paged
+---
+ This script shows different examples for plotting behavioral data. Specifically, this example uses learning data that was published in:
+ <br><br>
+ McHaney, J. R., Schuerman, W. L., Leonard, M. K., & Chandrasekaran, B. (2023). Transcutaneous Auricular Vagus Nerve Stimulation Modulates Performance but Not Pupil Size During Nonnative Speech Category Learning. *Journal of Speech, Language, and Hearing Research, 66*(10), 3825–3843. https://doi.org/10.1044/2023_JSLHR-22-00596
+ <br><br>
+ This script was written by Jacie R. McHaney on April 10, 2024
+ 
+# Load libraries and read in data
+ 
+ If you haven't downloaded the libraries listed below, be sure to run the following command: `install.packages('libraryneeded')` where `libraryneeded` is replaced with `tidyverse`,`rstatix`, or `ggplot2`. You will run this command in the Console.
+ 
+```{r}
+rm(list = ls()) #this clears your global environment
+
+library(tidyverse) #really helpful library for wrangling data
+library(rstatix) #awesome library for statistics
+library(ggplot2) #plotting library
+
+#replace the follwing path destination with where you've downloaded you data to.
+path <- '/Users/myk4766/Documents/Github'
+
+#read in csv file of data
+fn <- 'behavior_data.csv' #this is your file name
+data<- read.csv(paste(path, '/', fn, sep = '')) #now read it in 
+
+```
+ 
+ Take a quick look at the data.
+ 
+```{r}
+head(data)
+```
+ 
+ Now try to understand what each column if comprised of:
+ 
+```{r}
+summary(data)
+```
+ 
+ In this task, subjects completed a learning task across 5 blocks of learning (`block`) with 40 trials (`runTrial`) per block, where they head a tone (labeled as `correctanswer_tone` and had to categorize into 1 of 4 categories (participant response = `response`. There were two participants groups, labeled as `condition` in the data file. 
+<br> <br>
+Now that you're familiar with the data organization, let's start plotting to get an idea of how it looks.
+
+# Plots 
+
+First, get average accuracy per subject per block of learning
+
+```{r}
+
+acc.data <- data %>% # short cut to inserting a "pipe": Command Shift M (Ctrl Shift M on PC)
+  group_by(subj,block,condition) %>% 
+  get_summary_stats(acc, type = 'mean') %>% #this is a really cool function from rstatix
+  select(-c(variable, n)) %>%  #remove irrelevant columns
+  rename(Accuracy = mean) #rename the mean to accuracy
+  
+```
+
+Now each subject has an average accuracy per block in the task, split by condition
+
+## Plot accuracies with a line graph
+
+For plotting, my preference is to send each command of ggplot into a `p` variable. then `p <- p +` so that if I want to make quick changes, I can easily comment out the line that I want gone without doing a ton of work to the code.
+
+```{r}
+p <- ggplot(acc.data, aes(x = block, y = Accuracy, group = condition, color = condition))
+p <- p + geom_line(aes(group = subj), linewidth = .5, alpha = .1) #create individual subject lines with a .5 width and 10% visibility
+p <- p + stat_summary(fun.data = 'mean_se', geom = 'line', linewidth = 1, position = position_dodge(width = .2)) #average lines
+p <- p + stat_summary(fun.data = 'mean_se', geom = 'errorbar', linewidth = .5, width = .1, position = position_dodge(width = .2)) #error bars
+p <- p + stat_summary(fun.data = 'mean_se', geom = 'point', size = 3, position = position_dodge(width = .2)) #average points
+p <- p + scale_color_manual(values = c('#000000','#CC0000')) #assign whatever colors you want per group
+p <- p + theme_bw() #this removes grid lines
+p <- p + theme(panel.border = element_blank(), #panel commands remove major boxes
+               panel.grid.major = element_blank(),
+               panel.grid.minor = element_blank(), 
+               axis.line = element_line(colour = 'black'), #color of axis lines
+               axis.text = element_text(size = 14),
+               axis.title = element_text(size = 14),
+               legend.text = element_text(size = 14),
+               legend.title = element_blank(), #remove legend title and background box below
+               legend.background = element_blank(),
+               legend.position = c(0,1), #move legend to a specific position with this line and one below (numbers need to be the same in each)
+               legend.justification = c(0,1),
+               plot.title = element_text(hjust = .5, face = 'bold', size = 16)) #center plot title, bold it
+p <- p + ylab('Accuracy (Proportion Correct)') + xlab('Block') #axis labels
+p <- p + ggtitle('Tone Learning Accuracy') #plot title
+print(p) #show me the plot
+
+fname <- paste(path, '/accuracies.png',sep = '') #define figure name
+ggsave(fname, width = 4, height = 3, units = 'in') #save it with dimensions that you want
+```
+
+## Box plot
+
+As an example, let's highlight accuracies just in block 5 between groups
+
+```{r}
+#filter to just block 5 (last block)
+b5 <- acc.data %>% 
+  subset(block == 5)
+
+#plot
+p <- ggplot(b5, aes(x = condition, y = Accuracy, group = condition, color = condition))
+p <- p + geom_boxplot(linewidth = .5) 
+p <- p + geom_point(size = 3, alpha = .25, position = position_jitter(width = .1)) #overlay individual subject points and jitter them to show variability
+p <- p + stat_summary(fun.data = 'mean_se', geom = 'point', size = 5, shape = 18, aes(fill = condition)) #mean performance in each condition with a diamond point
+p <- p + scale_color_manual(values = c('#000000','#CC0000')) #assign whatever colors you want per group
+p <- p + theme_bw() #this removes grid lines
+p <- p + theme(panel.border = element_blank(), #panel commands remove major boxes
+               panel.grid.major = element_blank(),
+               panel.grid.minor = element_blank(), 
+               axis.line = element_line(colour = 'black'), #color of axis lines
+               axis.text = element_text(size = 14),
+               axis.title = element_text(size = 14),
+               legend.text = element_text(size = 14),
+               legend.title = element_blank(), #remove legend title and background box below
+               legend.background = element_blank(),
+               legend.position = c(0,1), #move legend to a specific position with this line and one below (numbers need to be the same in each)
+               legend.justification = c(0,1),
+               plot.title = element_text(hjust = .5, face = 'bold', size = 16)) #center plot title, bold it
+p <- p + ylab('Accuracy (Proportion Correct)') + xlab('Condition') #axis labels
+p <- p + ggtitle('Accuracy in Block 5') #plot title
+print(p) #show me the plot
+
+fname <- paste(path, '/accuracies_boxplot.png',sep = '') #define figure name
+ggsave(fname, width = 4, height = 3, units = 'in') #save it with dimensions that you want
+
+```
+
